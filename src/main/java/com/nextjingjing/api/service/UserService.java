@@ -8,6 +8,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,9 @@ import com.nextjingjing.api.util.JwtUtil;
 public class UserService {
     @Value("${app.cookie.secure}")
     private boolean cookieSecure;
+
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     private UserRepository userRepository;
@@ -72,7 +76,8 @@ public class UserService {
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
 
-            String token = jwtUtil.generateToken(request.getUsername());
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.getUsername());
+            String token = jwtUtil.generateToken(userDetails.getUsername());
 
             ResponseCookie cookie = ResponseCookie.from("jwt", token)
                     .httpOnly(true)

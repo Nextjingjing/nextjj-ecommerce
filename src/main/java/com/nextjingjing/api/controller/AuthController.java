@@ -2,6 +2,7 @@ package com.nextjingjing.api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,4 +37,8 @@ public class AuthController {
         return userService.logout();
     }
 
+    @GetMapping("/test")
+    public String privateCheck() {
+        return "Hello";
+    }
 }
