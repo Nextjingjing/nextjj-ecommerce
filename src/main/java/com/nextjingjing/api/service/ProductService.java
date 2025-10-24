@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.nextjingjing.api.dto.ProductDTO;
+import com.nextjingjing.api.dto.ProductRequestDTO;
 import com.nextjingjing.api.dto.ProductResponseDTO;
 import com.nextjingjing.api.entity.Category;
 import com.nextjingjing.api.entity.Product;
@@ -27,7 +27,7 @@ public class ProductService {
     @Autowired
     CategoryRepository categoryRepository;
 
-    public ProductResponseDTO createProduct(ProductDTO dto, MultipartFile imageFile) throws IOException {
+    public ProductResponseDTO createProduct(ProductRequestDTO dto, MultipartFile imageFile) throws IOException {
         Product product = new Product();
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());

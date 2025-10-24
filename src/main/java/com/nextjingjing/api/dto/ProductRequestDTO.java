@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class ProductDTO {
+public class ProductRequestDTO {
     @NotBlank(message = "Name is required")
     private String name;
 

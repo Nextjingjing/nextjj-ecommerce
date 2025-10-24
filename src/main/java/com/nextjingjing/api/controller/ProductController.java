@@ -1,6 +1,7 @@
 package com.nextjingjing.api.controller;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,11 +17,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nextjingjing.api.dto.ProductDTO;
+import com.nextjingjing.api.dto.ProductRequestDTO;
 import com.nextjingjing.api.dto.ProductResponseDTO;
 import com.nextjingjing.api.service.ProductService;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 @RestController
 @RequestMapping("api/product")
@@ -45,10 +51,17 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ProductResponseDTO> createProduct(
-            @Valid @RequestPart("product") String productJson,
+            @RequestPart("product") String productJson,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        ProductDTO productDTO = mapper.readValue(productJson, ProductDTO.class);
+        ProductRequestDTO productDTO = mapper.readValue(productJson, ProductRequestDTO.class);
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+
+        Set<ConstraintViolation<ProductRequestDTO>> violations = validator.validate(productDTO);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
         ProductResponseDTO created = productService.createProduct(productDTO, imageFile);
         return ResponseEntity.ok(created);
     }
