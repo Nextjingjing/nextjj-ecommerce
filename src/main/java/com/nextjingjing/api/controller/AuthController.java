@@ -2,6 +2,7 @@ package com.nextjingjing.api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,6 +40,13 @@ public class AuthController {
 
     @GetMapping("/test")
     public String privateCheck() {
-        return "Hello";
+        return "Hello Protect";
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/test/admin")
+    public String getMethodName() {
+        return "You are admin";
+    }
+    
 }
