@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.validation.ConstraintViolationException;
@@ -58,4 +59,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage());
     }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
+        HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
+        String reason = ex.getReason() != null ? ex.getReason() : status.getReasonPhrase();
+        return buildErrorResponse(status, status.getReasonPhrase(), reason);
+    }
+
 }

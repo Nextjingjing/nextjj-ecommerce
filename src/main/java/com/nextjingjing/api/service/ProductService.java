@@ -6,8 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nextjingjing.api.dto.ProductRequestDTO;
 import com.nextjingjing.api.dto.ProductResponseDTO;
@@ -69,7 +71,7 @@ public class ProductService {
 
     public ProductResponseDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         return convertToResponseDTO(product);
     }
 
@@ -88,26 +90,26 @@ public class ProductService {
     }
 
     public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto, MultipartFile imageFile) throws IOException {
-    Product product = productRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
-    product.setName(dto.getName());
-    product.setDescription(dto.getDescription());
-    product.setPrice(dto.getPrice());
-    product.setStock(dto.getStock());
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setStock(dto.getStock());
 
-    if (dto.getCategoryId() != null) {
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-        product.setCategory(category);
-    }
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
+            product.setCategory(category);
+        }
 
-    if (imageFile != null && !imageFile.isEmpty()) {
-        String imageUrl = cloudinaryService.uploadImage(imageFile);
-        product.setImageUrl(imageUrl);
-    }
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imageUrl = cloudinaryService.uploadImage(imageFile);
+            product.setImageUrl(imageUrl);
+        }
 
-    Product updated = productRepository.save(product);
-    return convertToResponseDTO(updated);
-    }
+        Product updated = productRepository.save(product);
+        return convertToResponseDTO(updated);
+        }
 }
