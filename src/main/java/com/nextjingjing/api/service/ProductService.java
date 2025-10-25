@@ -86,4 +86,28 @@ public class ProductService {
         }
         return dto;
     }
+
+    public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto, MultipartFile imageFile) throws IOException {
+    Product product = productRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Product not found"));
+
+    product.setName(dto.getName());
+    product.setDescription(dto.getDescription());
+    product.setPrice(dto.getPrice());
+    product.setStock(dto.getStock());
+
+    if (dto.getCategoryId() != null) {
+        Category category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        product.setCategory(category);
+    }
+
+    if (imageFile != null && !imageFile.isEmpty()) {
+        String imageUrl = cloudinaryService.uploadImage(imageFile);
+        product.setImageUrl(imageUrl);
+    }
+
+    Product updated = productRepository.save(product);
+    return convertToResponseDTO(updated);
+    }
 }

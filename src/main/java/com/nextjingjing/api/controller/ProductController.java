@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -64,4 +65,25 @@ public class ProductController {
         ProductResponseDTO created = productService.createProduct(productDTO, imageFile);
         return ResponseEntity.ok(created);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<ProductResponseDTO> updateProduct(
+            @PathVariable Long id,
+            @RequestPart("product") String productJson,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ProductRequestDTO productDTO = mapper.readValue(productJson, ProductRequestDTO.class);
+
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<ProductRequestDTO>> violations = validator.validate(productDTO);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+
+        ProductResponseDTO updated = productService.updateProduct(id, productDTO, imageFile);
+        return ResponseEntity.ok(updated);
+    }
+
 }
