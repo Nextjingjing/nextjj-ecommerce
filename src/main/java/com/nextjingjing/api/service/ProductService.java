@@ -89,7 +89,8 @@ public class ProductService {
         return dto;
     }
 
-    public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto, MultipartFile imageFile) throws IOException {
+    public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto, MultipartFile imageFile)
+            throws IOException {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
@@ -111,5 +112,12 @@ public class ProductService {
 
         Product updated = productRepository.save(product);
         return convertToResponseDTO(updated);
-        }
+    }
+
+    public void deleteProduct(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+
+        productRepository.delete(product);
+    }
 }
