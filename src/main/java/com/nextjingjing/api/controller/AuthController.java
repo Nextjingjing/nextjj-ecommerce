@@ -1,8 +1,12 @@
 package com.nextjingjing.api.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,5 +52,15 @@ public class AuthController {
     public String getMethodName() {
         return "You are admin";
     }
-    
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getProfile(Authentication authentication) {
+        var user = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("username", user.getUsername());
+        userInfo.put("roles", user.getAuthorities());
+        return ResponseEntity.ok(userInfo);
+    }
+
 }
