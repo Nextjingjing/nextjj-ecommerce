@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -95,4 +99,24 @@ public class OrderService {
         response.setItems(items);
         return response;
     }
+
+    public Page<OrderResponseDTO> getMyOrders(String username, int page, int size) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orders = orderRepository.findByUserId(user.getId(), pageable);
+        return orders.map(this::convertToResponse);
+    }
+
+    public OrderResponseDTO getOrderById(String username, Long orderId) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this order");
+        }
+        return convertToResponse(order);
+    }
+
 }
