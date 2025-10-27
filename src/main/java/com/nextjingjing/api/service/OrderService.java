@@ -162,4 +162,23 @@ public class OrderService {
         Order saved = orderRepository.save(order);
         return convertToResponse(saved);
     }
+
+    public void deleteOrder(Long userId, Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot delete this order");
+        }
+
+        for (OrderProduct op : order.getOrderProducts()) {
+            Product product = productRepository.findByIdForUpdate(op.getProduct().getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+
+            product.setStock(product.getStock() + op.getQuantity());
+            productRepository.save(product);
+        }
+
+        orderRepository.delete(order);
+        }
 }
