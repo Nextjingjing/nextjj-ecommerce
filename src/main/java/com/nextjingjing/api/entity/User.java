@@ -30,6 +30,12 @@ public class User {
     private String email;
 
     @Column()
+    private String fname;
+
+    @Column()
+    private String lname;
+
+    @Column()
     private String address;
 
     @Column(length = 20)

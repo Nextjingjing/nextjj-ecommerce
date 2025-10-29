@@ -18,8 +18,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -54,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            System.err.println("[JwtAuthenticationFilter] Invalid or expired token: " + e.getMessage());
+            logger.warn("[JwtAuthenticationFilter] Invalid or expired token: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);

@@ -1,9 +1,12 @@
 package com.nextjingjing.api.service;
 
+import java.lang.foreign.Linker.Option;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,11 +14,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nextjingjing.api.dto.LoginRequestDto;
 import com.nextjingjing.api.dto.LoginResponseDto;
 import com.nextjingjing.api.dto.UserRegisterRequestDto;
 import com.nextjingjing.api.dto.UserResponseDto;
+import com.nextjingjing.api.dto.UserUpdateRequestDto;
 import com.nextjingjing.api.entity.User;
 import com.nextjingjing.api.repository.UserRepository;
 import com.nextjingjing.api.util.JwtUtil;
@@ -114,4 +119,27 @@ public class UserService {
                 .header("Set-Cookie", cookie.toString())
                 .body(Map.of("status", "success", "message", "Logged out successfully"));
     }
+
+    public ResponseEntity<?> updateUserInfo(Long userId, UserUpdateRequestDto dto) {
+        User existUser = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (dto.getAddress() != null && !dto.getAddress().isEmpty()) {
+            existUser.setAddress(dto.getAddress());
+        }
+        if (dto.getTel() != null && !dto.getTel().isEmpty()) {
+            existUser.setTel(dto.getTel());
+        }
+        if (dto.getFname() != null && !dto.getFname().isEmpty()) {
+            existUser.setFname(dto.getFname());
+        }
+        if (dto.getLname() != null && !dto.getLname().isEmpty()) {
+            existUser.setLname(dto.getLname());
+        }
+
+        userRepository.save(existUser);
+
+        return ResponseEntity.ok(dto);
+    }
+
 }
