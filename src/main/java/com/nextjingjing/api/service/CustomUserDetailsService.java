@@ -26,10 +26,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         
         String role = user.isAdmin() ? "ROLE_ADMIN" : "ROLE_USER";
 
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                List.of(new SimpleGrantedAuthority(role))
-        );
+        return new CustomUserDetails(
+            user.getId(),
+            user.getUsername(),
+            user.getPassword(),
+            List.of(new SimpleGrantedAuthority(role))
+    );
     }
 }

@@ -17,6 +17,7 @@ import com.nextjingjing.api.dto.UserRegisterRequestDto;
 import com.nextjingjing.api.dto.UserResponseDto;
 import com.nextjingjing.api.dto.LoginRequestDto;
 import com.nextjingjing.api.dto.LoginResponseDto;
+import com.nextjingjing.api.service.CustomUserDetails;
 import com.nextjingjing.api.service.UserService;
 
 import jakarta.validation.Valid;
@@ -55,11 +56,14 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getProfile(Authentication authentication) {
-        var user = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+
+        CustomUserDetails customUser = (CustomUserDetails) authentication.getPrincipal();
 
         Map<String, Object> userInfo = new HashMap<>();
-        userInfo.put("username", user.getUsername());
-        userInfo.put("roles", user.getAuthorities());
+        userInfo.put("userId", customUser.getUserId());
+        userInfo.put("username", customUser.getUsername());
+        userInfo.put("roles", customUser.getAuthorities());
+
         return ResponseEntity.ok(userInfo);
     }
 
