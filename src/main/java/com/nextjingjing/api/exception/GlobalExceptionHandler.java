@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -22,6 +23,15 @@ public class GlobalExceptionHandler {
         response.put("message", message);
         response.put("timestamp", LocalDateTime.now());
         return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String paramName = ex.getName();
+        Object invalidValue = ex.getValue();
+        String message = String.format("Invalid value '%s' for parameter '%s'. Expected a numeric ID.", invalidValue, paramName);
+
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", message);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

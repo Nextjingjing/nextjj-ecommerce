@@ -7,5 +7,5 @@ public class OrderProductResponseDTO {
     private Long productId;
     private String productName;
     private Integer quantity;
-    private Double price;
+    private Double pricePerUnit;
 }

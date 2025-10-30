@@ -1,17 +1,5 @@
 package com.nextjingjing.api.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.nextjingjing.api.dto.OrderProductRequestDTO;
 import com.nextjingjing.api.dto.OrderProductResponseDTO;
 import com.nextjingjing.api.dto.OrderRequestDTO;
@@ -23,17 +11,29 @@ import com.nextjingjing.api.entity.User;
 import com.nextjingjing.api.repository.OrderRepository;
 import com.nextjingjing.api.repository.ProductRepository;
 import com.nextjingjing.api.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
 public class OrderService {
+
     @Autowired
     private OrderRepository orderRepository;
 
-     @Autowired
+    @Autowired
     private ProductRepository productRepository;
 
-     @Autowired
+    @Autowired
     private UserRepository userRepository;
 
     public OrderResponseDTO createOrder(Long userId, OrderRequestDTO dto) {
@@ -73,46 +73,23 @@ public class OrderService {
         order.setOrderProducts(orderProducts);
 
         Order savedOrder = orderRepository.save(order);
-
         return convertToResponse(savedOrder);
     }
 
-    private OrderResponseDTO convertToResponse(Order order) {
-        OrderResponseDTO response = new OrderResponseDTO();
-        response.setId(order.getId());
-        response.setOrderDate(order.getOrderDate());
-        response.setTotalAmount(order.getTotalAmount());
-        response.setUserId(order.getUser().getId());
-
-        List<OrderProductResponseDTO> items = new ArrayList<>();
-        for (OrderProduct op : order.getOrderProducts()) {
-            OrderProductResponseDTO itemDto = new OrderProductResponseDTO();
-            itemDto.setProductId(op.getProduct().getId());
-            itemDto.setProductName(op.getProduct().getName());
-            itemDto.setQuantity(op.getQuantity());
-            itemDto.setPrice(op.getPricePerUnit());
-            items.add(itemDto);
-        }
-        response.setItems(items);
-        return response;
-    }
-
-    public Page<OrderResponseDTO> getMyOrders(String username, int page, int size) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    public Page<OrderResponseDTO> getMyOrders(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Order> orders = orderRepository.findByUserId(user.getId(), pageable);
+        Page<Order> orders = orderRepository.findByUserId(userId, pageable);
         return orders.map(this::convertToResponse);
     }
 
-    public OrderResponseDTO getOrderById(String username, Long orderId) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    public OrderResponseDTO getOrderById(Long userId, Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-        if (!order.getUser().getId().equals(user.getId())) {
+
+        if (!order.getUser().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this order");
         }
+
         return convertToResponse(order);
     }
 
@@ -140,7 +117,8 @@ public class OrderService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
             if (product.getStock() < item.getQuantity()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough stock for " + product.getName());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Not enough stock for " + product.getName());
             }
 
             product.setStock(product.getStock() - item.getQuantity());
@@ -180,5 +158,26 @@ public class OrderService {
         }
 
         orderRepository.delete(order);
+    }
+
+    private OrderResponseDTO convertToResponse(Order order) {
+        OrderResponseDTO response = new OrderResponseDTO();
+        response.setId(order.getId());
+        response.setOrderDate(order.getOrderDate());
+        response.setTotalAmount(order.getTotalAmount());
+        response.setUserId(order.getUser().getId());
+
+        List<OrderProductResponseDTO> items = new ArrayList<>();
+        for (OrderProduct op : order.getOrderProducts()) {
+            OrderProductResponseDTO itemDto = new OrderProductResponseDTO();
+            itemDto.setProductId(op.getProduct().getId());
+            itemDto.setProductName(op.getProduct().getName());
+            itemDto.setQuantity(op.getQuantity());
+            itemDto.setPricePerUnit(op.getPricePerUnit());
+            items.add(itemDto);
         }
+
+        response.setItems(items);
+        return response;
+    }
 }
