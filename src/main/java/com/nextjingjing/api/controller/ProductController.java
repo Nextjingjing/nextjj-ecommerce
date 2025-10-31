@@ -30,7 +30,7 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
 @RestController
-@RequestMapping("api/product")
+@RequestMapping("api/products")
 public class ProductController {
     @Autowired
     private ProductService productService;

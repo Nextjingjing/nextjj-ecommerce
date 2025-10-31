@@ -22,7 +22,7 @@ import com.nextjingjing.api.service.OrderService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/order")
+@RequestMapping("/api/orders")
 public class OrderController {  
 
     @Autowired
