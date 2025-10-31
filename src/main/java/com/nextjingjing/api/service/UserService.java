@@ -145,6 +145,7 @@ public class UserService {
         User existUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         UserInfoResponseDto responseDto = new UserInfoResponseDto();
+        responseDto.setUserId(existUser.getId());
         responseDto.setAddress(existUser.getAddress());
         responseDto.setFname(existUser.getFname());
         responseDto.setLname(existUser.getLname());

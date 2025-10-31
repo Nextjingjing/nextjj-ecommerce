@@ -180,4 +180,10 @@ public class OrderService {
         response.setItems(items);
         return response;
     }
+
+    @Transactional(readOnly = true)
+    public Order findById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderId));
+    }
 }
