@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.nextjingjing.api.dto.LoginRequestDto;
 import com.nextjingjing.api.dto.LoginResponseDto;
+import com.nextjingjing.api.dto.UserInfoResponseDto;
 import com.nextjingjing.api.dto.UserRegisterRequestDto;
 import com.nextjingjing.api.dto.UserResponseDto;
 import com.nextjingjing.api.dto.UserUpdateRequestDto;
@@ -140,4 +141,14 @@ public class UserService {
         return ResponseEntity.ok(dto);
     }
 
+    public  UserInfoResponseDto getUserInfo(Long userId) {
+        User existUser = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        UserInfoResponseDto responseDto = new UserInfoResponseDto();
+        responseDto.setAddress(existUser.getAddress());
+        responseDto.setFname(existUser.getFname());
+        responseDto.setLname(existUser.getLname());
+        responseDto.setTel(existUser.getTel());
+        return responseDto;
+    }
 }
