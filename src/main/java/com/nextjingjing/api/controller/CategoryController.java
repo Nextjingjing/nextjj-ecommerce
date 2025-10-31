@@ -21,7 +21,7 @@ import com.nextjingjing.api.service.CategoryService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/category")
+@RequestMapping("/api/categories")
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;
