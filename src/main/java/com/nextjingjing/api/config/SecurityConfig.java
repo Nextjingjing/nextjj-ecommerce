@@ -24,10 +24,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                     .requestMatchers(HttpMethod.GET, 
-                    "/api/product", 
-                    "/api/product/**", 
-                    "/api/category", 
-                    "/api/category/**").permitAll()
+                    "/api/products", 
+                    "/api/products/**", 
+                    "/api/categories", 
+                    "/api/categories/**").permitAll()
                     .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
