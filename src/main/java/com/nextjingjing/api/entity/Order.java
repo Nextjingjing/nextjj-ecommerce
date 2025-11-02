@@ -31,6 +31,9 @@ public class Order {
     @Column(nullable = false)
     private Double totalAmount;
 
+    @Column(nullable = false, length = 20)
+    private String status = "PENDING";
+
     // Relation
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

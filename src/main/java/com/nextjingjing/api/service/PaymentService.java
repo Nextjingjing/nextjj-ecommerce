@@ -29,17 +29,15 @@ public class PaymentService {
 
     private final String defaultCurrency = "thb";
 
-    @PostConstruct
-    public void init() {
-        Stripe.apiKey = secretKey;
-        log.info("Stripe API Key initialized successfully");
-    }
-
     public PaymentIntent createPaymentIntent(Double amount, String currency, Order order) throws StripeException {
         Map<String, Object> params = new HashMap<>();
-        params.put("amount", Math.round(amount * 100)); // Stripe uses smallest currency unit
+        params.put("amount", Math.round(amount * 100));
         params.put("currency", (currency != null ? currency.toLowerCase() : defaultCurrency));
         params.put("automatic_payment_methods", Map.of("enabled", true));
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("order_id", order.getId().toString());
+        params.put("metadata", metadata);
 
         PaymentIntent intent = PaymentIntent.create(params);
 
@@ -63,5 +61,18 @@ public class PaymentService {
         payment.setPaymentDate(LocalDateTime.now());
         payment.setOrder(order);
         paymentRepository.save(payment);
+    }
+
+    @Transactional
+    public void updatePaymentStatus(Long orderId, String status) {
+        Payment payment = paymentRepository.findByOrder_Id(orderId);
+        if (payment != null) {
+            payment.setStatus(status);
+            payment.setPaymentDate(LocalDateTime.now());
+            paymentRepository.save(payment);
+            log.info("✅ Payment status updated to {} for order {}", status, orderId);
+        } else {
+            log.warn("⚠️ No payment record found for order {}", orderId);
+        }
     }
 }
