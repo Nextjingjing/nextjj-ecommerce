@@ -101,6 +101,10 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot edit this order");
         }
 
+        if ("PAID".equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot edit a paid order");
+        }
+
         for (OrderProduct oldItem : order.getOrderProducts()) {
             Product product = oldItem.getProduct();
             product.setStock(product.getStock() + oldItem.getQuantity());
