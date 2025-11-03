@@ -166,6 +166,7 @@ public class OrderService {
         response.setOrderDate(order.getOrderDate());
         response.setTotalAmount(order.getTotalAmount());
         response.setUserId(order.getUser().getId());
+        response.setStatus(order.getStatus());
 
         List<OrderProductResponseDTO> items = new ArrayList<>();
         for (OrderProduct op : order.getOrderProducts()) {

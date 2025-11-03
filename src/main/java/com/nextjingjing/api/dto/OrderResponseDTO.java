@@ -11,4 +11,5 @@ public class OrderResponseDTO {
     private Double totalAmount;
     private Long userId;
     private List<OrderProductResponseDTO> items;
+    private String status;
 }
