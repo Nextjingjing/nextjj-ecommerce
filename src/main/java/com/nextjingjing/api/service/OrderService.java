@@ -153,6 +153,10 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot delete this order");
         }
 
+        if ("PAID".equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot edit a paid order");
+        }
+
         for (OrderProduct op : order.getOrderProducts()) {
             Product product = productRepository.findByIdForUpdate(op.getProduct().getId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
