@@ -39,7 +39,22 @@ public class OrderService {
     public OrderResponseDTO createOrder(Long userId, OrderRequestDTO dto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
+        if (user.getFname() == null || user.getFname().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "First name is required");
+        }
+        if (user.getLname() == null || user.getLname().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Last name is required");
+        }
+        if (user.getAddress() == null || user.getAddress().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Address is required");
+        }
+        if (user.getTel() == null || user.getTel().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Telephone number is required");
+        }
         Order order = new Order();
         order.setUser(user);
 
