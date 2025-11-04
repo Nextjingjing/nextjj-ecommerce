@@ -18,7 +18,7 @@
 ## Description  
 This project is a RESTful E-Commerce backend built with Spring Boot.  
 It provides a full API for managing users, products, orders, authentication, and payment checkout.  
-The application uses JWT stored in HTTP-Only cookies for secure user sessions, PostgreSQL as the relational database, Cloudinary for image storage & delivery, and Stripe for payment processing.
+The application uses JWT stored cookies for secure user sessions, PostgreSQL as the relational database, Cloudinary for image storage & delivery, and Stripe for payment processing.
 
 Transactions are handled carefully with proper use of `@Transactional` and Pessimistic Locking (`FOR UPDATE`) to prevent concurrent stock issues.
 
@@ -31,7 +31,7 @@ Transactions are handled carefully with proper use of `@Transactional` and Pessi
 | Backend Framework      | Spring Boot (Java)                          |
 | Database               | PostgreSQL                                  |
 | ORM                    | Spring Data JPA / Hibernate                 |
-| Authentication         | JWT (stored in HTTP-Only Cookies)           |
+| Authentication         | JWT (stored in HTTP-Only Cookies) *(planned to change in future releases)* |
 | File Storage           | Cloudinary API                              |
 | Payment Gateway        | Stripe API                                  |
 | Validation             | Jakarta Bean Validation (`@Valid`, `@NotNull`, etc.) |
@@ -70,14 +70,15 @@ Transactions are handled carefully with proper use of `@Transactional` and Pessi
 ```bash
 git clone https://github.com/Nextjingjing/nextjj-ecommerce.git
 cd nextjj-ecommerce
-
+```
 ## ⚙️ 2. Create Environment File
 ```bash
 cp .env.dev.example .env
-
+```
 ## ⚙️ 3. Develop With Docker
 ```bash
 docker compose \
   -f docker-compose.dev.yml \
   --env-file .env.dev \
   up -d
+```
