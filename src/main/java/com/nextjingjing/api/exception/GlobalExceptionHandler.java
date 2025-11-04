@@ -1,7 +1,11 @@
 package com.nextjingjing.api.exception;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -9,7 +13,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import jakarta.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -25,22 +28,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(response);
     }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        String paramName = ex.getName();
-        Object invalidValue = ex.getValue();
-        String message = String.format("Invalid value '%s' for parameter '%s'. Expected a numeric ID.", invalidValue, paramName);
-
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", message);
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, List<String>> errors = new HashMap<>();
 
-        ex.getBindingResult().getFieldErrors()
-                .forEach(error -> errors.computeIfAbsent(error.getField(), key -> new ArrayList<>())
-                        .add(error.getDefaultMessage()));
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.computeIfAbsent(error.getField(), key -> new ArrayList<>())
+                        .add(error.getDefaultMessage())
+        );
 
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed", errors);
     }
@@ -60,14 +55,46 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed", errors);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        String message = "Malformed JSON request";
+
+        Throwable cause = ex.getCause();
+        if (cause instanceof InvalidFormatException invalidFormatEx) {
+            String fieldName = "unknown";
+            if (!invalidFormatEx.getPath().isEmpty()) {
+                fieldName = invalidFormatEx.getPath().get(0).getFieldName();
+            }
+            Object invalidValue = invalidFormatEx.getValue();
+            String targetType = invalidFormatEx.getTargetType().getSimpleName();
+
+            message = String.format(
+                    "Invalid value '%s' for field '%s'. Expected a value of type %s.",
+                    invalidValue, fieldName, targetType
+            );
+        } else if (cause instanceof JsonParseException) {
+            message = "Invalid JSON syntax";
+        }
+
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid JSON", message);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String paramName = ex.getName();
+        Object invalidValue = ex.getValue();
+        String message = String.format(
+                "Invalid value '%s' for parameter '%s'. Expected a value of type %s.",
+                invalidValue, paramName,
+                ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown"
+        );
+
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", message);
+    }
+
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage());
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage());
     }
 
     @ExceptionHandler(ResponseStatusException.class)
@@ -77,4 +104,8 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(status, status.getReasonPhrase(), reason);
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage());
+    }
 }
