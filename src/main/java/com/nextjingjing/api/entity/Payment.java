@@ -32,6 +32,12 @@ public class Payment {
     @Column(name = "payment_date", nullable = false)
     private LocalDateTime paymentDate = LocalDateTime.now();
 
+    @Column(name = "client_secret", length = 255)
+    private String clientSecret;
+
+    @Column(name = "stripe_payment_intent_id", length = 100)
+    private String stripePaymentIntentId;
+
     // Relation
     @OneToOne
     @JoinColumn(name = "order_id", nullable = false)
