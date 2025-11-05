@@ -41,7 +41,7 @@ public class User {
     @Column(length = 20)
     private String tel;
 
-    @Column(nullable = false)
+    @Column(name = "is_admin", nullable = false)
     private boolean isAdmin = false;
 
     // Relation
