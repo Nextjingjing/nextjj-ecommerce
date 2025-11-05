@@ -15,6 +15,7 @@ import com.nextjingjing.api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -219,5 +220,21 @@ public class OrderService {
 
         order.setStatus(status);
         orderRepository.save(order);
+    }
+
+    public Page<OrderResponseDTO> getAllOrders(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("orderDate").descending());
+
+
+        return orderRepository.findAll(pageable)
+                .map(order -> {
+                    OrderResponseDTO dto = new OrderResponseDTO();
+                    dto.setId(order.getId());
+                    dto.setUserId(order.getUser().getId());
+                    dto.setTotalAmount(order.getTotalAmount());
+                    dto.setStatus(order.getStatus());
+                    dto.setOrderDate(order.getOrderDate());
+                    return dto;
+                });
     }
 }
