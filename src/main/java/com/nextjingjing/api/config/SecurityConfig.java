@@ -37,7 +37,7 @@ public class SecurityConfig {
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/stripe/webhook").permitAll()
+                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/stripe/webhook", "/api/security/token").permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/api/products", "/api/products/**",
                     "/api/categories", "/api/categories/**").permitAll()
@@ -62,7 +62,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/stripe/webhook").permitAll()
+                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/stripe/webhook", "/api/security/token").permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/api/products", "/api/products/**",
                     "/api/categories", "/api/categories/**").permitAll()
