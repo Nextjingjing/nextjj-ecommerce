@@ -15,12 +15,33 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+    @Bean
+    public CookieCsrfTokenRepository csrfCookieRepository() {
+        CookieCsrfTokenRepository repo = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repo.setCookieCustomizer(cookie -> cookie
+            .path("/")
+            .secure(true)
+            .sameSite("Lax")
+        );
+        repo.setCookieName("XSRF-TOKEN");
+        repo.setHeaderName("X-XSRF-TOKEN");
+        return repo;
+    }
+
+    @Bean
+    public CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler() {
+        CsrfTokenRequestAttributeHandler handler = new CsrfTokenRequestAttributeHandler();
+        handler.setCsrfRequestAttributeName("_csrf");
+        return handler;
+    }
 
     @Bean
     @Profile("prod")
@@ -33,16 +54,25 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRepository(csrfCookieRepository())
+                .csrfTokenRequestHandler(csrfTokenRequestAttributeHandler())
+                .ignoringRequestMatchers("/api/auth/**", "/api/stripe/webhook")
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/stripe/webhook", "/api/security/token").permitAll()
+                .requestMatchers(
+                    "/api/auth/**",
+                    "/api/security/token",
+                    "/api/stripe/webhook"
+                ).permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/api/products", "/api/products/**",
-                    "/api/categories", "/api/categories/**").permitAll()
+                    "/api/categories", "/api/categories/**"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
+            .addFilterAfter(new CsrfCookieFilter(),
+                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtFilter,
                 org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
@@ -62,10 +92,15 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/stripe/webhook", "/api/security/token").permitAll()
+                .requestMatchers(
+                    "/api/auth/**",
+                    "/api/security/token",
+                    "/api/stripe/webhook"
+                ).permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/api/products", "/api/products/**",
-                    "/api/categories", "/api/categories/**").permitAll()
+                    "/api/categories", "/api/categories/**"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter,
